@@ -19,7 +19,7 @@ Add the following dependency to your `pom.xml`:
 ```xml
 <dependency>
     <groupId>com.dream11</groupId>
-    <artifactId>vertex-grpc-extension</artifactId>
+    <artifactId>vertx-grpc-extension</artifactId>
     <version>x.y.z</version>
 </dependency>
 ```
@@ -57,7 +57,7 @@ public class MyInterceptor implements ServerInterceptor {
 3. Create your Vertical:
 
 ```java
-public class MyGrpcVertical extends AbstractGrpcVertical {
+public class MyGrpcVerticle extends AbstractGrpcVerticle {
     public MyGrpcVertical() {
         super("com.your.package");
     }
