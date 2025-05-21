@@ -1,10 +1,10 @@
-# Vert.x gRPC Utilities
+# Vert.x gRPC Extension
 
-A utility library that simplifies the development of gRPC services using Vert.x. This library provides a set of tools and abstractions to make it easier to create, test, and maintain gRPC services in a Vert.x environment.
+A Library to provide a set of abstractions to make it easier to create and maintain gRPC services in Vert.x.
 
 ## Features
 
-- **Easy Service Registration**: Automatically discover and register gRPC services using annotations
+- **Easy Service & Interceptor Registration**: Automatically discover and register gRPC services and interceptors using annotations
 - **Dependency Injection**: Flexible dependency injection system for services and interceptors
 - **Standardized Error Handling**: Comprehensive error handling system with gRPC status integration
 - **Built-in Logging**: Request/response logging interceptor for debugging and monitoring
@@ -54,7 +54,7 @@ public class MyInterceptor implements ServerInterceptor {
 }
 ```
 
-3. Create your Vertical:
+3. Create your Verticle:
 
 ```java
 public class MyGrpcVerticle extends AbstractGrpcVerticle {
