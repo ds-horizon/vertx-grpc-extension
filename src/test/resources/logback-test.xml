@@ -1,0 +1,16 @@
+<configuration scan="true" scanPeriod="1 seconds">
+  <property scope="context" name="HOSTNAME" value="${HOSTNAME}"/>
+
+  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+    <encoder>
+      <pattern>
+        %date %highlight(%+5level) %-26thread %logger{36} [%file:%line] %green(%msg) %n
+      </pattern>
+    </encoder>
+  </appender>
+
+  <root level="info">
+    <appender-ref ref="STDOUT"/>
+  </root>
+
+</configuration>
