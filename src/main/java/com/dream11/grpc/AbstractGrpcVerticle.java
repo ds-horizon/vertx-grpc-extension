@@ -140,7 +140,7 @@ public abstract class AbstractGrpcVerticle extends AbstractVerticle {
     }
 
     return this.httpServer
-        .requestHandler(grpcServer)
+        .requestHandler(this.grpcServer)
         .rxListen()
         .ignoreElement()
         .doOnComplete(() -> log.info("gRPC server started successfully"))
@@ -216,7 +216,7 @@ public abstract class AbstractGrpcVerticle extends AbstractVerticle {
    */
   @Override
   public Completable rxStop() {
-    return httpServer
+    return this.httpServer
         .rxClose()
         .doOnComplete(() -> log.info("gRPC server stopped successfully"))
         .doOnError(err -> log.info("Failed to stop gRPC server", err));
