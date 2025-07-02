@@ -14,14 +14,22 @@ A Library to provide a set of abstractions to make it easier to create and maint
 
 ### Installation
 
-Add the following dependency to your `pom.xml`:
+Add the following dependency to the `dependencies` section of your build descriptor:
 
+- Maven (in your `pom.xml`):
 ```xml
-<dependency>
+  <dependency>
     <groupId>com.dream11</groupId>
     <artifactId>vertx-grpc-extension</artifactId>
     <version>x.y.z</version>
-</dependency>
+  </dependency>
+```
+
+- Gradle (in your `build.gradle` file):
+```
+  dependencies {
+   compile 'com.dream11:vertx-grpc-extension:x.y.z'
+  }
 ```
 
 ## Usage
