@@ -54,7 +54,7 @@
     <netty.version>4.1.118.Final</netty.version>
     <reflections.version>0.10.2</reflections.version>
     <slf4j.version>2.0.17</slf4j.version>
-    <logback.version>1.5.18</logback.version>
+    <logback.version>1.5.19</logback.version>
 
     <!--  Tests  -->
     <junit-jupiter.version>5.12.2</junit-jupiter.version>
