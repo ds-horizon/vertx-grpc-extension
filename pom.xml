@@ -9,19 +9,19 @@
 
   <name>${project.groupId}:${project.artifactId}</name>
   <description>Library to provide a set of abstractions to make it easier to create and maintain gRPC services in Vert.x</description>
-  <url>https://github.com/dream-sports-labs/vertx-grpc-extension</url>
+  <url>https://github.com/ds-horizon/vertx-grpc-extension</url>
 
   <scm>
-    <developerConnection>scm:git:https://github.com/dream-sports-labs/vertx-grpc-extension.git</developerConnection>
-    <connection>scm:git:https://github.com/dream-sports-labs/vertx-grpc-extension.git</connection>
-    <url>https://github.com/dream-sports-labs/vertx-grpc-extension</url>
+    <developerConnection>scm:git:https://github.com/ds-horizon/vertx-grpc-extension.git</developerConnection>
+    <connection>scm:git:https://github.com/ds-horizon/vertx-grpc-extension.git</connection>
+    <url>https://github.com/ds-horizon/vertx-grpc-extension</url>
     <tag>HEAD</tag>
   </scm>
 
   <licenses>
     <license>
       <name>MIT License</name>
-      <url>https://github.com/dream-sports-labs/vertx-grpc-extension/raw/master/LICENSE</url>
+      <url>https://github.com/ds-horizon/vertx-grpc-extension/raw/master/LICENSE</url>
     </license>
   </licenses>
 
