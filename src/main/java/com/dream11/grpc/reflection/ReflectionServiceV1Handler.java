@@ -2,7 +2,14 @@ package com.dream11.grpc.reflection;
 
 import com.google.protobuf.Descriptors;
 import io.grpc.Status;
-import io.grpc.reflection.v1alpha.*;
+import io.grpc.reflection.v1alpha.ErrorResponse;
+import io.grpc.reflection.v1alpha.ExtensionNumberResponse;
+import io.grpc.reflection.v1alpha.ExtensionRequest;
+import io.grpc.reflection.v1alpha.FileDescriptorResponse;
+import io.grpc.reflection.v1alpha.ListServiceResponse;
+import io.grpc.reflection.v1alpha.ServerReflectionRequest;
+import io.grpc.reflection.v1alpha.ServerReflectionResponse;
+import io.grpc.reflection.v1alpha.ServiceResponse;
 import io.vertx.core.Handler;
 import io.vertx.grpc.server.GrpcServerRequest;
 import io.vertx.grpc.server.GrpcServerResponse;
@@ -10,6 +17,7 @@ import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.Queue;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public class ReflectionServiceV1Handler
     implements Handler<GrpcServerRequest<ServerReflectionRequest, ServerReflectionResponse>> {
@@ -28,23 +36,23 @@ public class ReflectionServiceV1Handler
               request.response();
           switch (serverReflectionRequest.getMessageRequestCase()) {
             case LIST_SERVICES:
-              response.end(getServiceList(serverReflectionRequest));
+              response.end(this.getServiceList(serverReflectionRequest));
               break;
             case FILE_BY_FILENAME:
-              response.end(getFileByName(serverReflectionRequest));
+              response.end(this.getFileByName(serverReflectionRequest));
               break;
             case FILE_CONTAINING_SYMBOL:
-              response.end(getFileContainingSymbol(serverReflectionRequest));
+              response.end(this.getFileContainingSymbol(serverReflectionRequest));
               break;
             case FILE_CONTAINING_EXTENSION:
-              response.end(getFileByExtension(serverReflectionRequest));
+              response.end(this.getFileByExtension(serverReflectionRequest));
               break;
             case ALL_EXTENSION_NUMBERS_OF_TYPE:
-              response.end(getAllExtensions(serverReflectionRequest));
+              response.end(this.getAllExtensions(serverReflectionRequest));
               break;
             default:
               response.end(
-                  getErrorResponse(
+                  this.getErrorResponse(
                       serverReflectionRequest,
                       Status.Code.UNIMPLEMENTED,
                       "not implemented " + serverReflectionRequest.getMessageRequestCase()));
@@ -54,12 +62,11 @@ public class ReflectionServiceV1Handler
 
   private ServerReflectionResponse getServiceList(ServerReflectionRequest request) {
     ListServiceResponse response =
-        index.getServiceNames().stream()
-            .map(s -> ServiceResponse.newBuilder().setName(s).build())
-            .collect(
-                ListServiceResponse::newBuilder,
-                ListServiceResponse.Builder::addService,
-                (b1, b2) -> b1.addAllService(b2.getServiceList()))
+        ListServiceResponse.newBuilder()
+            .addAllService(
+                this.index.getServiceNames().stream()
+                    .map(s -> ServiceResponse.newBuilder().setName(s).build())
+                    .collect(Collectors.toList()))
             .build();
 
     return ServerReflectionResponse.newBuilder()
@@ -71,21 +78,22 @@ public class ReflectionServiceV1Handler
 
   private ServerReflectionResponse getFileByName(ServerReflectionRequest request) {
     String name = request.getFileByFilename();
-    Descriptors.FileDescriptor fd = index.getFileDescriptorByName(name);
+    Descriptors.FileDescriptor fd = this.index.getFileDescriptorByName(name);
     if (fd != null) {
-      return getServerReflectionResponse(request, fd);
+      return this.getServerReflectionResponse(request, fd);
     } else {
-      return getErrorResponse(request, Status.Code.NOT_FOUND, "File not found (" + name + ")");
+      return this.getErrorResponse(request, Status.Code.NOT_FOUND, "File not found (" + name + ")");
     }
   }
 
   private ServerReflectionResponse getFileContainingSymbol(ServerReflectionRequest request) {
     String symbol = request.getFileContainingSymbol();
-    Descriptors.FileDescriptor fd = index.getFileDescriptorBySymbol(symbol);
+    Descriptors.FileDescriptor fd = this.index.getFileDescriptorBySymbol(symbol);
     if (fd != null) {
-      return getServerReflectionResponse(request, fd);
+      return this.getServerReflectionResponse(request, fd);
     } else {
-      return getErrorResponse(request, Status.Code.NOT_FOUND, "Symbol not found (" + symbol + ")");
+      return this.getErrorResponse(
+          request, Status.Code.NOT_FOUND, "Symbol not found (" + symbol + ")");
     }
   }
 
@@ -93,19 +101,20 @@ public class ReflectionServiceV1Handler
     ExtensionRequest extensionRequest = request.getFileContainingExtension();
     String type = extensionRequest.getContainingType();
     int extension = extensionRequest.getExtensionNumber();
-    Descriptors.FileDescriptor fd = index.getFileDescriptorByExtensionAndNumber(type, extension);
+    Descriptors.FileDescriptor fd =
+        this.index.getFileDescriptorByExtensionAndNumber(type, extension);
     if (fd != null) {
-      return getServerReflectionResponse(request, fd);
+      return this.getServerReflectionResponse(request, fd);
     } else {
-      return getErrorResponse(
+      return this.getErrorResponse(
           request, Status.Code.NOT_FOUND, "Extension not found (" + type + ", " + extension + ")");
     }
   }
 
   private ServerReflectionResponse getAllExtensions(ServerReflectionRequest request) {
     String type = request.getAllExtensionNumbersOfType();
-    Set<Integer> extensions = index.getExtensionNumbersOfType(type);
-    if (extensions != null) {
+    Set<Integer> extensions = this.index.getExtensionNumbersOfType(type);
+    if (!extensions.isEmpty()) {
       ExtensionNumberResponse.Builder builder =
           ExtensionNumberResponse.newBuilder()
               .setBaseTypeName(type)
@@ -116,7 +125,7 @@ public class ReflectionServiceV1Handler
           .setAllExtensionNumbersResponse(builder)
           .build();
     } else {
-      return getErrorResponse(request, Status.Code.NOT_FOUND, "Type not found.");
+      return this.getErrorResponse(request, Status.Code.NOT_FOUND, "Type not found.");
     }
   }
 

@@ -54,7 +54,7 @@ public class GrpcServerIndex {
     // Traverse the set of service and add dependencies
     while (!fileDescriptorsToProcess.isEmpty()) {
       Descriptors.FileDescriptor fd = fileDescriptorsToProcess.remove();
-      processFileDescriptor(
+      this.processFileDescriptor(
           fd, fileDescriptorsByName, fileDescriptorsBySymbol, fileDescriptorsByExtensionAndNumber);
       for (Descriptors.FileDescriptor dep : fd.getDependencies()) {
         if (!files.contains(dep.getName())) {
@@ -72,25 +72,23 @@ public class GrpcServerIndex {
   }
 
   public Set<String> getServiceNames() {
-    return names;
+    return this.names;
   }
 
   public Descriptors.FileDescriptor getFileDescriptorByName(String name) {
-    return descriptorsByName.get(name);
+    return this.descriptorsByName.get(name);
   }
 
   public Descriptors.FileDescriptor getFileDescriptorBySymbol(String symbol) {
-    return descriptorsBySymbol.get(symbol);
+    return this.descriptorsBySymbol.get(symbol);
   }
 
   public Descriptors.FileDescriptor getFileDescriptorByExtensionAndNumber(String type, int number) {
-    Map<Integer, Descriptors.FileDescriptor> map =
-        descriptorsByExtensionAndNumber.getOrDefault(type, Collections.emptyMap());
-    return map.get(number);
+    return this.descriptorsByExtensionAndNumber.getOrDefault(type, Map.of()).get(number);
   }
 
   public Set<Integer> getExtensionNumbersOfType(String type) {
-    return descriptorsByExtensionAndNumber.getOrDefault(type, Collections.emptyMap()).keySet();
+    return this.descriptorsByExtensionAndNumber.getOrDefault(type, Map.of()).keySet();
   }
 
   private void processFileDescriptor(
@@ -103,15 +101,14 @@ public class GrpcServerIndex {
       throw new IllegalStateException("File name already used: " + name);
     }
     descriptorsByName.put(name, fd);
-    for (Descriptors.ServiceDescriptor service : fd.getServices()) {
-      processService(service, fd, descriptorsBySymbol);
-    }
-    for (Descriptors.Descriptor type : fd.getMessageTypes()) {
-      processType(type, fd, descriptorsBySymbol, descriptorsByExtensionAndNumber);
-    }
-    for (Descriptors.FieldDescriptor extension : fd.getExtensions()) {
-      processExtension(extension, fd, descriptorsByExtensionAndNumber);
-    }
+    fd.getServices().forEach(service -> this.processService(service, fd, descriptorsBySymbol));
+    fd.getMessageTypes()
+        .forEach(
+            type ->
+                this.processType(type, fd, descriptorsBySymbol, descriptorsByExtensionAndNumber));
+    fd.getExtensions()
+        .forEach(
+            extension -> this.processExtension(extension, fd, descriptorsByExtensionAndNumber));
   }
 
   private void processService(
@@ -146,12 +143,14 @@ public class GrpcServerIndex {
       throw new IllegalStateException("Type already defined: " + fullyQualifiedTypeName);
     }
     descriptorsBySymbol.put(fullyQualifiedTypeName, fd);
-    for (Descriptors.FieldDescriptor extension : type.getExtensions()) {
-      processExtension(extension, fd, descriptorsByExtensionAndNumber);
-    }
-    for (Descriptors.Descriptor nestedType : type.getNestedTypes()) {
-      processType(nestedType, fd, descriptorsBySymbol, descriptorsByExtensionAndNumber);
-    }
+    type.getExtensions()
+        .forEach(
+            extension -> this.processExtension(extension, fd, descriptorsByExtensionAndNumber));
+    type.getNestedTypes()
+        .forEach(
+            nestedType ->
+                this.processType(
+                    nestedType, fd, descriptorsBySymbol, descriptorsByExtensionAndNumber));
   }
 
   private void processExtension(
