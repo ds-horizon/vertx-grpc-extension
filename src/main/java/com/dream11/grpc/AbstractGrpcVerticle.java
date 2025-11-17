@@ -3,11 +3,14 @@ package com.dream11.grpc;
 import com.dream11.grpc.annotation.GrpcInterceptor;
 import com.dream11.grpc.annotation.GrpcService;
 import com.dream11.grpc.interceptor.LoggingInterceptor;
+import com.dream11.grpc.reflection.GrpcServerIndex;
+import com.dream11.grpc.reflection.ReflectionServiceV1Handler;
 import com.dream11.grpc.util.AnnotationUtil;
 import io.grpc.BindableService;
 import io.grpc.ServerInterceptor;
 import io.grpc.ServerInterceptors;
-import io.grpc.protobuf.services.ProtoReflectionService;
+import io.grpc.ServerServiceDefinition;
+import io.grpc.reflection.v1alpha.ServerReflectionGrpc;
 import io.reactivex.Completable;
 import io.vertx.core.http.HttpServerOptions;
 import io.vertx.grpc.server.GrpcServiceBridge;
@@ -30,7 +33,7 @@ import lombok.extern.slf4j.Slf4j;
  *   <li>Automatic discovery of services and interceptors using annotations
  * </ul>
  *
- * To use this class, extend it and implement the {@link #getInjector()} method to provide
+ * <p>To use this class, extend it and implement the {@link #getInjector()} method to provide
  * dependency injection for your services and interceptors.
  */
 @Slf4j
@@ -126,19 +129,24 @@ public abstract class AbstractGrpcVerticle extends AbstractVerticle {
     this.httpServer = this.vertx.createHttpServer(this.httpServerOptions);
     this.grpcServer = GrpcServer.server(this.vertx);
     List<ServerInterceptor> interceptors = this.getAllInterceptors();
-
-    // Register reflection service
-    if (this.hasReflectionService) {
-      this.addServiceWithInterceptors(ProtoReflectionService.newInstance(), List.of());
-    }
+    List<ServerServiceDefinition> definitions = new ArrayList<>();
 
     // Register services
     for (Class<?> clazz : this.getGrpcServices()) {
       log.debug("Registering service:{}", clazz.getName());
-      this.addServiceWithInterceptors(
-          (BindableService) this.getInjector().getInstance(clazz), interceptors);
+      BindableService service = (BindableService) this.getInjector().getInstance(clazz);
+      definitions.add(service.bindService());
+      this.addServiceWithInterceptors(service, interceptors);
     }
 
+    // Register reflection service
+    if (this.hasReflectionService) {
+      this.grpcServer
+          .getDelegate()
+          .callHandler(
+              ServerReflectionGrpc.getServerReflectionInfoMethod(),
+              new ReflectionServiceV1Handler(new GrpcServerIndex(definitions)));
+    }
     return this.httpServer
         .requestHandler(this.grpcServer)
         .rxListen()
